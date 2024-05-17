@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the project files to the working directory
 COPY . .
 
+# Expose the Flask port
 EXPOSE 5000
 
-CMD [ "flask", "--app", "hostit", "run", "--debug"]
+# Set the Flask app environment variable and run the application
+CMD [ "flask", "--app", "hostit", "run", "--host=0.0.0.0", "--port=5000"]

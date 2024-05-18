@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, request, render_template
 
 def create_app(test_config=None):
     # create and configure the app
@@ -21,14 +21,18 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
-
-    # a simple page that says hello
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
     
     # expose the app to work with machine outside dokcker
     from . import db
     db.init_app(app)
+    
+    @app.route('/')
+    def hello():
+        if request.method == 'GET':
+            return render_template('base.html')
+        
+    from . import auth, blog
+    app.register_blueprint(auth.bp)
+    app.register_blueprint(blog.bp)
 
     return app

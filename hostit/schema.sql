@@ -7,7 +7,7 @@ CREATE TABLE user (
     password TEXT NOT NULL
 );
 
-CREATE TABLE image_post (
+CREATE TABLE image (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     image TEXT NOT NULL,

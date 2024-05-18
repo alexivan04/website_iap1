@@ -4,6 +4,7 @@ from flask import (
 )
 
 from hostit.db import get_db
+from . import auth
 import os
 import imghdr
 import uuid
@@ -16,14 +17,26 @@ bp = Blueprint('blog', __name__, url_prefix='/blog')
 def about_me():
     return render_template('blog/about_me.html')
 
+# Add a new route to the blog blueprint that will display all images in the database.
+@bp.route('/gallery', methods=['GET'])
+def gallery():
+    db = get_db()
+    images = db.execute("SELECT * FROM image").fetchall()
+    return render_template('/blog/gallery.html', images=images)
+
 @bp.route('/post_image', methods=('GET', 'POST'))
 def post_image():
+    if g.user is None:
+        return redirect(url_for('auth.login'))
+        
     if request.method == 'POST':
         error = None
         image = request.files['image']
         user_id = session.get('user_id')
+        photo_type = request.form['photo_type']
+        caption = request.form['caption']
         filename = secure_filename(image.filename)
-        
+            
         file_ext = os.path.splitext(filename)[1]
         if file_ext not in current_app.config[
             "UPLOAD_EXTENSIONS"
@@ -41,12 +54,15 @@ def post_image():
 
             if not image:
                 error = 'Image is required.'
+            
+            if not photo_type:
+                error = 'Photo type is required.'
 
             if error is None:
                 try:
                     db.execute(
-                        "INSERT INTO image (user_id, image) VALUES (?, ?)",
-                        (user_id, filename),
+                        "INSERT INTO image (user_id, image, type, caption) VALUES (?, ?, ?, ?)",
+                        (user_id, filename, photo_type, caption),
                     )
                     db.commit()
                 except db.IntegrityError:
@@ -66,3 +82,7 @@ def validate_image(stream):
     if not format:
         return None
     return "." + (format if format != "jpeg" else "jpg")
+
+@bp.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(current_app.config['UPLOAD_PATH'], filename)

@@ -10,7 +10,7 @@ def create_app(test_config=None):
     )
     
     app.config["UPLOAD_EXTENSIONS"] = [".jpg", ".png", ".jpeg"]
-    app.config["UPLOAD_PATH"] = os.path.join(app.instance_path, "image_uploads")
+    app.config["UPLOAD_PATH"] = os.path.join(app.static_folder, "image_uploads")
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -30,13 +30,15 @@ def create_app(test_config=None):
     from . import db
     db.init_app(app)
     
-    @app.route('/')
-    def hello():
-        if request.method == 'GET':
-            return render_template('base.html')
+    
         
     from . import auth, blog
     app.register_blueprint(auth.bp)
     app.register_blueprint(blog.bp)
+    
+    @app.route('/')
+    def hello():
+        if request.method == 'GET':
+            return blog.gallery()
 
     return app

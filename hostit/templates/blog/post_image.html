@@ -8,6 +8,18 @@
   <form method="post" enctype="multipart/form-data">
     <label for="image">Image</label>
     <input type="file" name="image" id="image" required>
+
+    <label for="caption">Caption</label>
+    <input type="text" name="caption" id="caption">
+
+    <select name="photo_type" id="photo_type" required>
+        <option value="">Select a photo type</option>
+        <option value="landscape">Landscape</option>
+        <option value="portrait">Portrait</option>
+        <option value="nature">Nature</option>
+        <option value="architecture">Architecture</option>
+    </select>
+
     <input type="submit" value="Post Image">
   </form>
 {% endblock %}

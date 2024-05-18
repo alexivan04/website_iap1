@@ -11,5 +11,7 @@ CREATE TABLE image (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     image TEXT NOT NULL,
+    type TEXT NOT NULL,
+    caption TEXT,
     FOREIGN KEY (user_id) REFERENCES user(id)
 );

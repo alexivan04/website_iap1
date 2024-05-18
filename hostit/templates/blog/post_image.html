@@ -12,13 +12,12 @@
     <label for="caption">Caption</label>
     <input type="text" name="caption" id="caption">
 
-    <select name="photo_type" id="photo_type" required>
-        <option value="">Select a photo type</option>
-        <option value="landscape">Landscape</option>
-        <option value="portrait">Portrait</option>
-        <option value="nature">Nature</option>
-        <option value="architecture">Architecture</option>
-    </select>
+<select name="photo_type" id="photo_type" required>
+    {% for key, value in photo_options.items() %}
+        <option value="{{ key }}">{{ value }}</option>
+    {% endfor %}
+</select>
+
 
     <input type="submit" value="Post Image">
   </form>

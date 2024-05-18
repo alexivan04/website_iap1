@@ -11,6 +11,14 @@ import uuid
 from flask import request, session, send_from_directory
 from werkzeug.utils import secure_filename
 
+photo_options = {
+    "": "Select a photo type",
+    "landscape": "Landscape",
+    "portrait": "Portrait",
+    "natureee": "Natureeee",
+    "architecture": "Architecture"
+}
+
 bp = Blueprint('blog', __name__, url_prefix='/blog')
 
 @bp.route('/about_me', methods=['GET'])
@@ -22,7 +30,17 @@ def about_me():
 def gallery():
     db = get_db()
     images = db.execute("SELECT * FROM image").fetchall()
-    return render_template('/blog/gallery.html', images=images)
+    
+    # Group images by their type
+    photos_by_type = {}
+    for image in images:
+        photo_type = image['type']
+        if photo_type not in photos_by_type:
+            photos_by_type[photo_type] = []
+        photos_by_type[photo_type].append(image)
+    
+    return render_template('/blog/gallery.html', photos_by_type=photos_by_type, photo_options=photo_options)
+
 
 @bp.route('/post_image', methods=('GET', 'POST'))
 def post_image():
@@ -73,7 +91,7 @@ def post_image():
                     return redirect(url_for("blog.post_image"))
                 
         flash(error)
-    return render_template('blog/post_image.html')
+    return render_template('blog/post_image.html', photo_options=photo_options)
 
 def validate_image(stream):
     header = stream.read(512)

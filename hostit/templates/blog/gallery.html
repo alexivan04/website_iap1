@@ -13,18 +13,26 @@
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Adjust the width of the columns as needed */
       grid-gap: 10px; /* Adjust the gap between images */
     }
+    .image-item {
+      width: 100%; /* Ensure each item takes full width initially */
+    }
     .image-item img {
       max-width: 100%; /* Ensure the image does not exceed its container's width */
       height: auto; /* Maintain aspect ratio */
     }
   </style>
 
-  <div class="image-grid">
-    {% for image in images %}
-      <div class="image-item">
-        <img src="{{ url_for('static', filename='image_uploads/' + image['image']) }}" alt="{{ image['caption'] }}">
-        <p>{{ image['caption'] }}</p>
-      </div>
-    {% endfor %}
-  </div>
+  {% for photo_type, images in photos_by_type.items() %}
+    {% set photo_label = photo_options.get(photo_type) %}
+    <h3>{{ photo_label }}</h3>
+    <div class="image-grid">
+      {% for image in images %}
+        <div class="image-item {{ image.type }}">
+          <img src="{{ url_for('static', filename='image_uploads/' + image['image']) }}" alt="{{ image['caption'] }}">
+          <p>{{ image['caption'] }}</p>
+        </div>
+      {% endfor %}
+    </div>
+{% endfor %}
+
 {% endblock %}

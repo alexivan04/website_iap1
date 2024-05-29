@@ -28,11 +28,15 @@
     <div class="image-grid">
       {% for image in images %}
         <div class="image-item {{ image.type }}">
-          <img src="{{ url_for('static', filename='image_uploads/' + image['image']) }}" alt="{{ image['caption'] }}">
+          {% if g.user %}
+            <img src="{{ url_for('static', filename='image_uploads/' + image['image']) }}" alt="{{ image['caption'] }}">
+          {% else %}
+            <img src="{{ url_for('static', filename='low_res_uploads/' + image['low_res_image']) }}" alt="{{ image['caption'] }}">
+          {% endif %}
           <p>{{ image['caption'] }}</p>
         </div>
       {% endfor %}
     </div>
-{% endfor %}
+  {% endfor %}
 
 {% endblock %}

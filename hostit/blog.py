@@ -10,12 +10,13 @@ import imghdr
 import uuid
 from flask import request, session, send_from_directory
 from werkzeug.utils import secure_filename
+from PIL import Image
 
 photo_options = {
     "": "Select a photo type",
     "landscape": "Landscape",
     "portrait": "Portrait",
-    "natureee": "Natureeee",
+    "nature": "Nature",
     "architecture": "Architecture"
 }
 
@@ -41,7 +42,6 @@ def gallery():
     
     return render_template('/blog/gallery.html', photos_by_type=photos_by_type, photo_options=photo_options)
 
-
 @bp.route('/post_image', methods=('GET', 'POST'))
 def post_image():
     if g.user is None:
@@ -56,17 +56,14 @@ def post_image():
         filename = secure_filename(image.filename)
             
         file_ext = os.path.splitext(filename)[1]
-        if file_ext not in current_app.config[
-            "UPLOAD_EXTENSIONS"
-        ] or file_ext != validate_image(image.stream):
+        if file_ext not in current_app.config["UPLOAD_EXTENSIONS"] or file_ext != validate_image(image.stream):
             error = "Invalid image extension"
             
         else:
-            # check if filename exists, if so, generate a new filename
+            # Check if filename exists, if so, generate a new filename
             while os.path.exists(os.path.join(current_app.config["UPLOAD_PATH"], filename)):
-                filename = str(uuid.uuid4()) + filename
+                filename = str(uuid.uuid4()) + file_ext
             
-            print(filename)
             db = get_db()
             error = None
 
@@ -77,21 +74,32 @@ def post_image():
                 error = 'Photo type is required.'
 
             if error is None:
+                # Create a low resolution version of the image
+                low_res_filename = os.path.splitext(filename)[0] + "_low_res" + file_ext
+                
                 try:
                     db.execute(
-                        "INSERT INTO image (user_id, image, type, caption) VALUES (?, ?, ?, ?)",
-                        (user_id, filename, photo_type, caption),
+                        "INSERT INTO image (user_id, image, low_res_image, type, caption) VALUES (?, ?, ?, ?, ?)",
+                        (user_id, filename, low_res_filename, photo_type, caption),
                     )
                     db.commit()
                 except db.IntegrityError:
-                    error = f"Error posting image"
+                    error = "Error posting image"
                 else:
                     flash("Image posted successfully")
                     image.save(os.path.join(current_app.config["UPLOAD_PATH"], filename))
+                    
+                    # Use Willow to create a low resolution version
+                    pillow_image = Image.open(os.path.join(current_app.config["UPLOAD_PATH"], filename))
+                    # low_res_image = pillow_image.thumbnail((200, 200))
+                    low_res_image = pillow_image.resize((100, 100))
+                    low_res_path = os.path.join(current_app.config["LOW_RES_PATH"], low_res_filename)
+                    low_res_image.save(low_res_path)
+                    
                     return redirect(url_for("blog.post_image"))
-                
         flash(error)
     return render_template('blog/post_image.html', photo_options=photo_options)
+
 
 def validate_image(stream):
     header = stream.read(512)
@@ -104,3 +112,7 @@ def validate_image(stream):
 @bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_PATH'], filename)
+
+@bp.route('/low_res_uploads/<filename>')
+def low_res_uploaded_file(filename):
+    return send_from_directory(current_app.config['LOW_RES_PATH'], filename)

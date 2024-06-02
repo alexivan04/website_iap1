@@ -31,3 +31,7 @@ logged in can view photos in full resolution, otherwise, only low resolution pho
     ```bash
     docker run -p 5000:5000 -it iap1-tema
     ```
+5. Open a browser and go to
+    ```bash
+    localhost:5000
+    ```
